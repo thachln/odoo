@@ -4,7 +4,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
 
 import urllib
-from odoo.addons.web.controllers.main import login_and_redirect
+#from odoo.addons.web.controllers.main import login_and_redirect
 from openid.cryptutil import randomString
 from odoo.exceptions import AccessDenied
 import urlparse
@@ -104,7 +104,8 @@ class Controller(http.Controller):
                 user_id.write({'cas_key': cas_key, 'password': cas_key})
                 request.cr.commit()
                 try:
-                    login_and_redirect(dbname, idUser, cas_key)
+                    #login_and_redirect(dbname, idUser, cas_key)
+                    request.session.authenticate(dbname, idUser, cas_key)
                 except AccessDenied:
                     values = {}
                     values['databases'] = http.db_list()
