@@ -5,9 +5,10 @@
 
 import urllib
 #from odoo.addons.web.controllers.main import login_and_redirect
-from openid.cryptutil import randomString
+#from openid.cryptutil import randomString
 from odoo.exceptions import AccessDenied
-import urlparse
+#import urlparse
+from urllib.parse import urlparse
 
 from ..pycas import login
 
@@ -63,6 +64,15 @@ class Controller(http.Controller):
             '/cas/login?service=' + service_url
         # response
         return werkzeug.utils.redirect(cas_login)
+
+    @staticmethod
+    def randomString(length, chrs=None):
+        """Produce a string of length random bytes, chosen from chrs."""
+        if chrs is None:
+            return getBytes(length)
+        else:
+            n = len(chrs)
+            return ''.join([chrs[randrange(n)] for _ in xrange(length)])
 
     @staticmethod
     def cas_authenticate_user(

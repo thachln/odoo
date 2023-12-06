@@ -15,6 +15,7 @@ class AuthOAuthProvider(models.Model):
     auth_endpoint = fields.Char(string='Authorization URL', required=True)  # OAuth provider URL to authenticate users
     scope = fields.Char(default='openid profile email')  # OAUth user data desired to access
     validation_endpoint = fields.Char(string='UserInfo URL', required=True)  # OAuth provider URL to get user information
+    # validation_endpoint = 'https://login.microsoftonline.com/24da48c7-889d-4865-81c5-272a77bc88e2/oauth2/v2.0/token'
     data_endpoint = fields.Char()
     enabled = fields.Boolean(string='Allowed')
     css_class = fields.Char(string='CSS class', default='fa fa-fw fa-sign-in text-primary')

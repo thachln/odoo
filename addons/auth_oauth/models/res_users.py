@@ -13,6 +13,10 @@ from odoo.addons.auth_signup.models.res_users import SignupError
 from odoo.addons import base
 base.models.res_users.USER_PRIVATE_FIELDS.append('oauth_access_token')
 
+from json import JSONDecodeError
+import logging
+_logger = logging.getLogger(__name__)
+
 class ResUsers(models.Model):
     _inherit = 'res.users'
 
@@ -26,12 +30,35 @@ class ResUsers(models.Model):
 
     def _auth_oauth_rpc(self, endpoint, access_token):
         if self.env['ir.config_parameter'].sudo().get_param('auth_oauth.authorization_header'):
+            _logger.info('Request %s with headers Authorization: Bear %s', endpoint, access_token)
             response = requests.get(endpoint, headers={'Authorization': 'Bearer %s' % access_token}, timeout=10)
+            print('respons1=', response.content)
+            f = open('response1.txt', 'w')
+            f.write(response.text)
+            f.close()
         else:
-            response = requests.get(endpoint, params={'access_token': access_token}, timeout=10)
+            _logger.info('Request %s with params access_token=%s', endpoint, access_token)
+            # response = requests.get(endpoint, params={'access_token': access_token}, timeout=10)
+            response = requests.post(endpoint, params={'access_token': access_token}, timeout=10)
+            f = open('response2.txt', 'w')
+            f.write(response.text)
+            f.close()
 
         if response.ok: # nb: could be a successful failure
-            return response.json()
+            try:
+                _logger.info('endpoint=%s', endpoint)
+                # print('_auth_oauth_rpc: response.text=', response.text)
+                _logger.info('type(response)=%s', type(response))
+                # _logger.info('dir(response)=%s', dir(response))
+
+                return response.json()
+            except JSONDecodeError as ex:
+                _logger.error(ex)
+                # f = open('response_error.txt', 'w')
+                # f.write(response.text)
+                # f.close()
+                return {'error': 'Response could not be serialized'}
+                
 
         auth_challenge = werkzeug.http.parse_www_authenticate_header(
             response.headers.get('WWW-Authenticate'))
@@ -44,11 +71,18 @@ class ResUsers(models.Model):
     def _auth_oauth_validate(self, provider, access_token):
         """ return the validation data corresponding to the access token """
         oauth_provider = self.env['auth.oauth.provider'].browse(provider)
+        _logger.info('_auth_oauth_validate.validation_endpoint=%s', oauth_provider.validation_endpoint)
+        _logger.info('_auth_oauth_validate.data_endpoint=%s', oauth_provider.data_endpoint)
+        _logger.info('_auth_oauth_validate.access_token=%s', access_token)
+
         validation = self._auth_oauth_rpc(oauth_provider.validation_endpoint, access_token)
+
         if validation.get("error"):
             raise Exception(validation['error'])
         if oauth_provider.data_endpoint:
             data = self._auth_oauth_rpc(oauth_provider.data_endpoint, access_token)
+            _logger.info('_auth_oauth_validate.data=%s', data)
+            
             validation.update(data)
         # unify subject key, pop all possible and get most sensible. When this
         # is reworked, BC should be dropped and only the `sub` key should be

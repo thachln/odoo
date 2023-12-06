@@ -85,11 +85,11 @@
 #  Imports
 # -----------------------------------------------------------------------
 import os
-import md5
+import hashlib as md5
 import time
 import urllib
-import urllib2
-import urlparse
+from urllib.request import urlopen
+from urllib.parse import urlparse
 
 # -----------------------------------------------------------------------
 #  Constants
@@ -192,7 +192,7 @@ def do_redirect(cas_host, service_url, opt, secure):
     """ Send redirect to client.  This function does not return,\
     i.e. it teminates this script. """
     cas_url = cas_host + "/login?service=" + service_url
-    urllib2.urlopen(cas_url)
+    urlopen(cas_url)
     if opt in ("renew", "gateway"):
         cas_url += "&%s=true" % opt
     if opt == "gateway":

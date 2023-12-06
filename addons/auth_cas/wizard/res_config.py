@@ -8,7 +8,8 @@ from odoo.exceptions import ValidationError
 from odoo import api, fields, models
 from odoo.tools.safe_eval import safe_eval
 from odoo.tools.translate import _
-from urlparse import urlparse
+#from urlparse import urlparse
+from urllib.parse import urlparse
 
 _logger = logging.getLogger(__name__)
 try:
@@ -54,7 +55,7 @@ class CasBaseConfigSettings(models.TransientModel):
         }
 
     # Setter is required too
-    @api.multi
+    #@api.multi
     def set_cas_values(self):
         self.ensure_one()
         icp = self.env['ir.config_parameter']
@@ -99,7 +100,7 @@ class CasBaseConfigSettings(models.TransientModel):
         # if users have to be created on the fly or not
         icp.set_param('cas_auth.cas_create_user', str(self.cas_create_user))
 
-    @api.multi
+    # @api.multi
     def check_cas_server(self):
 
         """Check whether CAS paramaters (host and port) are valid"""
@@ -126,7 +127,7 @@ class CasBaseConfigSettings(models.TransientModel):
                 title = 'cas_check_success'
                 message = 'Parameters are correct\nThe CAS server is well ' \
                           'configured'
-        except Exception, e:
+        except Exception as e:
             _logger.debug(e)
             error_message = e
         # At the moment, I only found this method
